@@ -60,6 +60,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.20
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.61
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.31.2
+	github.com/charmbracelet/bubbles v0.15.0
+	github.com/charmbracelet/bubbletea v0.23.2
+	github.com/charmbracelet/lipgloss v0.7.1
+	github.com/deepmap/oapi-codegen v1.12.4
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/structs v1.1.0
 	github.com/go-git/go-git/v5 v5.6.1
@@ -73,6 +77,7 @@ require (
 	github.com/projectdiscovery/gologger v1.1.8
 	github.com/projectdiscovery/httpx v1.2.9
 	github.com/projectdiscovery/mapcidr v1.1.1
+	github.com/projectdiscovery/nuclei-cloud-api-go v0.0.0-20230429170424-0eab13fa7659
 	github.com/projectdiscovery/nvd v1.0.10-0.20230327073015-721181aba1e8
 	github.com/projectdiscovery/ratelimit v0.0.6
 	github.com/projectdiscovery/rdap v0.9.1-0.20221108103045-9865884d1917
@@ -92,6 +97,8 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.2.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v0.9.0 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
+	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.24 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.11 // indirect
@@ -104,6 +111,7 @@ require (
 	github.com/cheggaaa/pb/v3 v3.1.2 // indirect
 	github.com/cloudflare/cfssl v1.6.4 // indirect
 	github.com/cloudflare/circl v1.1.0 // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/dlclark/regexp2 v1.8.1 // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/google/certificate-transparency-go v1.1.4 // indirect
@@ -116,8 +124,11 @@ require (
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mackerelio/go-osstat v0.2.4 // indirect
+	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/minio/selfupdate v0.6.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
+	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
@@ -125,6 +136,7 @@ require (
 	github.com/projectdiscovery/asnmap v1.0.3 // indirect
 	github.com/projectdiscovery/cdncheck v0.0.4-0.20220413175814-b47bc2d578b1 // indirect
 	github.com/projectdiscovery/freeport v0.0.4 // indirect
+	github.com/sahilm/fuzzy v0.1.0 // indirect
 	github.com/shoenig/go-m1cpu v0.1.4 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/smartystreets/assertions v1.0.0 // indirect
@@ -139,6 +151,8 @@ require (
 	github.com/yuin/goldmark v1.5.4 // indirect
 	github.com/yuin/goldmark-emoji v1.0.1 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/term v0.7.0 // indirect
 	gopkg.in/djherbis/times.v1 v1.3.0 // indirect
 )
 
