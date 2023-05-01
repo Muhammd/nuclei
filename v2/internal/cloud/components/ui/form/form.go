@@ -37,11 +37,11 @@ func InitialModel(config Config) *Model {
 	for i, input := range config.Inputs {
 		inputs[i] = textinput.New()
 		inputs[i].Placeholder = input.PlaceHolder
-		inputs[i].Focus()
 		inputs[i].CharLimit = input.CharLimit
 		inputs[i].Width = input.Width
 		inputs[i].Prompt = ""
 	}
+	inputs[0].Focus()
 	return &Model{inputs: inputs, focused: 0, err: nil, config: config}
 }
 

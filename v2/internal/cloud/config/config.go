@@ -72,7 +72,7 @@ type NameAndID struct {
 
 // PopulateFromEnv populates the configuration struct from the environment variables.
 func (c *Config) PopulateFromEnv() error {
-	if apikey := os.Getenv("NUCLEI_API_KEY"); apikey != "" {
+	if apikey := os.Getenv("NUCLEI_CLOUD_API"); apikey != "" {
 		c.APIKey = apikey
 	}
 	if apiurl := os.Getenv("NUCLEI_CLOUD_SERVER"); apiurl != "" {

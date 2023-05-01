@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/nuclei/v2/internal/cloud/components/datasources"
 	"github.com/projectdiscovery/nuclei/v2/internal/cloud/components/playlists/assets"
 	"github.com/projectdiscovery/nuclei/v2/internal/cloud/components/playlists/templates"
 	"github.com/projectdiscovery/nuclei/v2/internal/cloud/components/projects"
@@ -19,6 +20,10 @@ func (c *Client) preRunActions() error {
 	// If interactive mode is enabled, ask for resource details
 	if c.config.Interactive || c.config.Workspace == "" || c.config.Project == "" {
 		if err := c.askForWorkspace(); err != nil {
+			return err
+		}
+		// Ask datasources
+		if err := c.askForDatasources(); err != nil {
 			return err
 		}
 		if err := c.askForProject(); err != nil {
@@ -62,6 +67,19 @@ func (c *Client) askForWorkspace() error {
 	}
 	gologger.Info().Msgf("Using workspace: %s [%d]\n", c.config.Workspace, c.config.InternalIDs.WorkspaceID)
 	return nil
+}
+
+func (c *Client) askForDatasources() error {
+	if c.config.NonInteractive {
+		return nil
+	}
+
+	model, err := datasources.New(c.api, c.config)
+	if err != nil {
+		return err
+	}
+	err = model.Run()
+	return err
 }
 
 func (c *Client) askForProject() error {
@@ -122,7 +140,7 @@ func (c *Client) askForTemplates() error {
 	if len(c.config.TemplatePlaylist) == 0 {
 		return fmt.Errorf("template playlist is required")
 	}
-	gologger.Info().Msgf("Using template playlist: %v [%v]\n", c.config.TemplatePlaylist, c.config.InternalIDs.TemplatePlaylistIDs)
+	gologger.Info().Msgf("Using template playlist: %v %v\n", c.config.TemplatePlaylist, c.config.InternalIDs.TemplatePlaylistIDs)
 	return nil
 }
 
@@ -154,6 +172,6 @@ func (c *Client) askForAssets() error {
 	if len(c.config.AssetPlaylist) == 0 {
 		return fmt.Errorf("asset playlist is required")
 	}
-	gologger.Info().Msgf("Using asset playlist: %s [%v]\n", c.config.AssetPlaylist, c.config.InternalIDs.AssetPlaylistIDs)
+	gologger.Info().Msgf("Using asset playlist: %s %v\n", c.config.AssetPlaylist, c.config.InternalIDs.AssetPlaylistIDs)
 	return nil
 }
