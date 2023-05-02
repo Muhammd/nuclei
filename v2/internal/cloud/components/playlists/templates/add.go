@@ -16,10 +16,13 @@ func (model *Model) initAddPlaylist() {
 			},
 		},
 		InputStyle: inputStyle,
-		OnSubmit: func(inputs []string) {
+		OnSubmit: func(inputs []string) error {
 			model.formValues = inputs
 			model.state = stateTemplates
+			return nil
 		},
+		Prompt:      "Enter the details for the playlist",
+		PromptStyle: titleStyle,
 	}
-	model.form = form.InitialModel(cfg)
+	model.form = form.InitialModel(cfg, model.size)
 }

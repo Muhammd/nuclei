@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	// Horizonal and vertical padding for the list
+	appStyle      = lipgloss.NewStyle().Padding(1, 2)
 	continueStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#767676"))
 )
 
@@ -20,9 +22,11 @@ type Model struct {
 }
 
 type Config struct {
-	Inputs     []Input
-	InputStyle lipgloss.Style
-	OnSubmit   func([]string)
+	Inputs      []Input
+	InputStyle  lipgloss.Style
+	OnSubmit    func([]string) error
+	Prompt      string
+	PromptStyle lipgloss.Style
 }
 
 type Input struct {
@@ -30,9 +34,10 @@ type Input struct {
 	CharLimit   int
 	Width       int
 	Prompt      string
+	Original    string
 }
 
-func InitialModel(config Config) *Model {
+func InitialModel(config Config, size tea.WindowSizeMsg) *Model {
 	inputs := make([]textinput.Model, len(config.Inputs))
 	for i, input := range config.Inputs {
 		inputs[i] = textinput.New()
@@ -41,17 +46,25 @@ func InitialModel(config Config) *Model {
 		inputs[i].Width = input.Width
 		inputs[i].Prompt = ""
 	}
+	appStyle.Height(size.Height)
+	appStyle.Width(size.Width)
 	inputs[0].Focus()
 	return &Model{inputs: inputs, focused: 0, err: nil, config: config}
 }
 
 // NextInput focuses the next input field
 func (m *Model) NextInput() {
+	if len(m.inputs) == 0 {
+		return
+	}
 	m.focused = (m.focused + 1) % len(m.inputs)
 }
 
 // PrevInput focuses the previous input field
 func (m *Model) PrevInput() {
+	if len(m.inputs) == 0 {
+		return
+	}
 	m.focused--
 	if m.focused < 0 {
 		m.focused = len(m.inputs) - 1
@@ -64,17 +77,20 @@ func (m *Model) Init() tea.Cmd {
 
 func (m *Model) View() string {
 	var builder strings.Builder
+	builder.WriteString(m.config.PromptStyle.Render(m.config.Prompt))
+	builder.WriteString("\n\n")
+
 	for i, input := range m.inputs {
 		origInput := m.config.Inputs[i]
 
-		builder.WriteString("\n")
 		builder.WriteString(m.config.InputStyle.Width(origInput.Width).Render(origInput.Prompt))
 		builder.WriteString("\n")
 		builder.WriteString(input.View())
 		builder.WriteString("\n\n")
 	}
+	builder.WriteString("\n") // Add a newline here
 	builder.WriteString(continueStyle.Render("Continue ->"))
-	return builder.String()
+	return appStyle.Render(builder.String())
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -89,7 +105,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				for i, input := range m.inputs {
 					values[i] = input.Value()
 				}
-				m.config.OnSubmit(values)
+				if err := m.config.OnSubmit(values); err != nil {
+					return m, tea.Quit
+				}
 				return m, nil
 			}
 			m.NextInput()
@@ -103,7 +121,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		for i := range m.inputs {
 			m.inputs[i].Blur()
 		}
-		m.inputs[m.focused].Focus()
+		if len(m.inputs) > 0 {
+			m.inputs[m.focused].Focus()
+		}
 	}
 
 	for i := range m.inputs {

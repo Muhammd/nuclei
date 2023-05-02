@@ -23,8 +23,9 @@ type Model struct {
 
 	choice *selector.Model
 
-	form       *form.Model
-	formValues []string
+	form               *form.Model
+	formValues         []string
+	cloudlistProviders []string
 
 	lists *styledlist.Model
 
@@ -33,7 +34,8 @@ type Model struct {
 
 	size tea.WindowSizeMsg
 
-	formFields []datasourcesFormConfig
+	formFields          []datasourcesFormConfig
+	cloudlistFormFields map[string]datasourcesFormConfig
 }
 
 var (
@@ -60,6 +62,7 @@ func New(client *api.ClientWithResponses, config *config.Config) (*Model, error)
 	if err != nil {
 		return nil, err
 	}
+
 	model.formFields = form
 	if len(items) == 0 {
 		model.state = stateChoose

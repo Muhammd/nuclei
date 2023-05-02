@@ -7,27 +7,41 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var (
+	// Horizonal and vertical padding for the list
+	appStyle = lipgloss.NewStyle().Padding(1, 2)
+)
+
 type Model struct {
-	prompt      string
-	choices     []string
-	cursor      int
-	choice      string
-	OnChoice    func(string)
-	promptStyle lipgloss.Style
+	cfg *Config
+
+	cursor int
+	choice string
+
+	choices []string
 }
 
 type Config struct {
-	Prompt      string
-	Choices     []string
+	Prompt Prompt
+
+	// SubPrompts is a map of choices to subprompts. If a choice is selected
+	SubPrompt map[string]Prompt
+
 	PromptStyle lipgloss.Style
+	OnChoice    func([]string)
+}
+
+type Prompt struct {
+	Prompt  string
+	Choices []string
 }
 
 func New(cfg Config) *Model {
-	return &Model{prompt: cfg.Prompt, choices: cfg.Choices, promptStyle: cfg.PromptStyle}
+	return &Model{cfg: &cfg}
 }
 
-func (m *Model) Choice() string {
-	return m.choice
+func (m *Model) Choice() []string {
+	return m.choices
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -42,20 +56,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "enter":
-			m.choice = m.choices[m.cursor]
-			m.OnChoice(m.choice)
+			m.choice = m.cfg.Prompt.Choices[m.cursor]
+			m.choices = append(m.choices, m.choice)
+			// If we have a subprompt, do not call OnChoice yet
+			if newPrompt, ok := m.cfg.SubPrompt[m.choice]; ok {
+				m.choice = ""
+				m.cursor = 0
+				m.cfg.Prompt = newPrompt
+				return m, tea.ClearScreen
+			}
+			m.cfg.OnChoice(m.choices)
 			return m, nil
 
 		case "down", "j":
 			m.cursor++
-			if m.cursor >= len(m.choices) {
+			if m.cursor >= len(m.cfg.Prompt.Choices) {
 				m.cursor = 0
 			}
 
 		case "up", "k":
 			m.cursor--
 			if m.cursor < 0 {
-				m.cursor = len(m.choices) - 1
+				m.cursor = len(m.cfg.Prompt.Choices) - 1
 			}
 		}
 	}
@@ -65,19 +87,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) View() string {
 	s := strings.Builder{}
-	s.WriteString(m.promptStyle.Render(m.prompt))
+	s.WriteString(m.cfg.PromptStyle.Render(m.cfg.Prompt.Prompt))
 	s.WriteString("\n\n")
 
-	for i := 0; i < len(m.choices); i++ {
+	for i := 0; i < len(m.cfg.Prompt.Choices); i++ {
 		if m.cursor == i {
-			s.WriteString("(•) ")
+			s.WriteString("[>] ")
 		} else {
-			s.WriteString("( ) ")
+			s.WriteString("[ ] ")
 		}
-		s.WriteString(m.choices[i])
+		s.WriteString(m.cfg.Prompt.Choices[i])
 		s.WriteString("\n")
 	}
 	s.WriteString("\n(press q to quit)\n")
 
-	return s.String()
+	return appStyle.Render(s.String())
 }

@@ -6,16 +6,25 @@ import (
 
 func (m *Model) initChoice() {
 	cfg := selector.Config{
-		Prompt: "Select a datasource type to create",
-		Choices: []string{
-			"Github",
-			"S3",
+		Prompt: selector.Prompt{
+			Prompt: "Select a datasource type to create",
+			Choices: []string{
+				"Github",
+				"S3",
+				"Cloudlist",
+			},
+		},
+		SubPrompt: map[string]selector.Prompt{
+			"Cloudlist": {
+				Prompt:  "Select a cloudlist type to create",
+				Choices: m.cloudlistProviders,
+			},
 		},
 		PromptStyle: inputStyle,
+		OnChoice: func(choice []string) {
+			m.state = stateAdd
+			m.initForm()
+		},
 	}
 	m.choice = selector.New(cfg)
-	m.choice.OnChoice = func(choice string) {
-		m.state = stateAdd
-		m.initForm()
-	}
 }
