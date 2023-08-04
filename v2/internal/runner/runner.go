@@ -112,10 +112,7 @@ func New(options *types.Options) (*Runner, error) {
 
 		// Check for template updates and update if available.
 		// If the custom templates manager is not nil, we will install custom templates if there is a fresh installation
-		tm := &installer.TemplateManager{
-			CustomTemplates:        ctm,
-			DisablePublicTemplates: options.PublicTemplateDisableDownload,
-		}
+		tm := &installer.TemplateManager{CustomTemplates: ctm}
 		if err := tm.FreshInstallIfNotExists(); err != nil {
 			gologger.Warning().Msgf("failed to install nuclei templates: %s\n", err)
 		}
@@ -343,18 +340,10 @@ func createReportingOptions(options *types.Options) (*reporting.Options, error) 
 	}
 	if options.MarkdownExportDirectory != "" {
 		if reportingOptions != nil {
-			reportingOptions.MarkdownExporter = &markdown.Options{
-				Directory:         options.MarkdownExportDirectory,
-				IncludeRawPayload: !options.OmitRawRequests,
-				SortMode:          options.MarkdownExportSortMode,
-			}
+			reportingOptions.MarkdownExporter = &markdown.Options{Directory: options.MarkdownExportDirectory}
 		} else {
 			reportingOptions = &reporting.Options{}
-			reportingOptions.MarkdownExporter = &markdown.Options{
-				Directory:         options.MarkdownExportDirectory,
-				IncludeRawPayload: !options.OmitRawRequests,
-				SortMode:          options.MarkdownExportSortMode,
-			}
+			reportingOptions.MarkdownExporter = &markdown.Options{Directory: options.MarkdownExportDirectory}
 		}
 	}
 	if options.SarifExport != "" {
@@ -367,30 +356,18 @@ func createReportingOptions(options *types.Options) (*reporting.Options, error) 
 	}
 	if options.JSONExport != "" {
 		if reportingOptions != nil {
-			reportingOptions.JSONExporter = &jsonexporter.Options{
-				File:              options.JSONExport,
-				IncludeRawPayload: !options.OmitRawRequests,
-			}
+			reportingOptions.JSONExporter = &jsonexporter.Options{File: options.JSONExport}
 		} else {
 			reportingOptions = &reporting.Options{}
-			reportingOptions.JSONExporter = &jsonexporter.Options{
-				File:              options.JSONExport,
-				IncludeRawPayload: !options.OmitRawRequests,
-			}
+			reportingOptions.JSONExporter = &jsonexporter.Options{File: options.JSONExport}
 		}
 	}
 	if options.JSONLExport != "" {
 		if reportingOptions != nil {
-			reportingOptions.JSONLExporter = &jsonl.Options{
-				File:              options.JSONLExport,
-				IncludeRawPayload: !options.OmitRawRequests,
-			}
+			reportingOptions.JSONLExporter = &jsonl.Options{File: options.JSONLExport}
 		} else {
 			reportingOptions = &reporting.Options{}
-			reportingOptions.JSONLExporter = &jsonl.Options{
-				File:              options.JSONLExport,
-				IncludeRawPayload: !options.OmitRawRequests,
-			}
+			reportingOptions.JSONLExporter = &jsonl.Options{File: options.JSONLExport}
 		}
 	}
 

@@ -115,7 +115,7 @@ func GenerateVariables(input interface{}, removeTrailingSlash bool, additionalVa
 
 func generateVariables(inputURL *urlutil.URL, removeTrailingSlash bool) map[string]interface{} {
 	parsed := inputURL.Clone()
-	parsed.Params = urlutil.NewOrderedParams()
+	parsed.Params = make(urlutil.Params)
 	port := parsed.Port()
 	if port == "" {
 		if parsed.Scheme == "https" {

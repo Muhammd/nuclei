@@ -13,14 +13,13 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/utils"
 )
 
-var codeTestCases = []TestCaseInfo{
-	{Path: "protocols/code/py-snippet.yaml", TestCase: &codeSnippet{}},
-	{Path: "protocols/code/py-file.yaml", TestCase: &codeFile{}},
-	{Path: "protocols/code/py-env-var.yaml", TestCase: &codeEnvVar{}},
-	{Path: "protocols/code/unsigned.yaml", TestCase: &unsignedCode{}},
-	{Path: "protocols/code/rsa-signed.yaml", TestCase: &rsaSignedCode{}},
-	{Path: "protocols/code/py-interactsh.yaml", TestCase: &codeSnippet{}},
-	{Path: "protocols/code/ps1-snippet.yaml", TestCase: &codeSnippet{}, DisableOn: func() bool { return !osutils.IsWindows() }},
+var codeTestCases = map[string]testutils.TestCase{
+	"protocols/code/py-snippet.yaml":    &codeSnippet{},
+	"protocols/code/py-file.yaml":       &codeFile{},
+	"protocols/code/py-env-var.yaml":    &codeEnvVar{},
+	"protocols/code/unsigned.yaml":      &unsignedCode{},
+	"protocols/code/rsa-signed.yaml":    &rsaSignedCode{},
+	"protocols/code/py-interactsh.yaml": &codeSnippet{},
 }
 
 var (
@@ -51,6 +50,10 @@ func init() {
 		panic(err)
 	}
 
+	if osutils.IsWindows() {
+		codeTestCases["protocols/code/ps1-snippet.yaml"] = &codeSnippet{}
+	}
+
 	signTemplates()
 }
 
@@ -66,15 +69,7 @@ func signTemplates() {
 		log.Fatalf("couldn't create crypto engine: %s\n", err)
 	}
 
-	for _, v := range codeTestCases {
-		templatePath := v.Path
-		testCase := v.TestCase
-
-		if v.DisableOn != nil && v.DisableOn() {
-			// skip ps1 test case on non-windows platforms
-			continue
-		}
-
+	for templatePath, testCase := range codeTestCases {
 		templatePath, err := filepath.Abs(templatePath)
 		if err != nil {
 			panic(err)

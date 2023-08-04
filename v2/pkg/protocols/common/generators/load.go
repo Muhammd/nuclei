@@ -2,16 +2,16 @@ package generators
 
 import (
 	"bufio"
+	"io"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
-	pkgTypes "github.com/projectdiscovery/nuclei/v2/pkg/types"
 	"github.com/spf13/cast"
 )
 
 // loadPayloads loads the input payloads from a map to a data map
-func (generator *PayloadGenerator) loadPayloads(payloads map[string]interface{}, templatePath, templateDirectory string, allowLocalFileAccess bool) (map[string][]string, error) {
+func (generator *PayloadGenerator) loadPayloads(payloads map[string]interface{}, templatePath, templateDirectory string, sandbox bool) (map[string][]string, error) {
 	loadedPayloads := make(map[string][]string)
 
 	for name, payload := range payloads {
@@ -22,13 +22,9 @@ func (generator *PayloadGenerator) loadPayloads(payloads map[string]interface{},
 			if len(elements) >= 2 {
 				loadedPayloads[name] = elements
 			} else {
-				if !allowLocalFileAccess {
+				if sandbox {
 					pt = filepath.Clean(pt)
-					templateAbsPath, err := filepath.Abs(templatePath)
-					if err != nil {
-						return nil, errors.Wrap(err, "could not get absolute path")
-					}
-					templatePathDir := filepath.Dir(templateAbsPath)
+					templatePathDir := filepath.Dir(templatePath)
 					if !(templatePathDir != "/" && strings.HasPrefix(pt, templatePathDir)) && !strings.HasPrefix(pt, templateDirectory) {
 						return nil, errors.New("denied payload file path specified")
 					}
@@ -64,7 +60,7 @@ func (generator *PayloadGenerator) loadPayloadsFromFile(filepath string) ([]stri
 		}
 		lines = append(lines, text)
 	}
-	if err := scanner.Err(); err != nil && !errors.Is(err, pkgTypes.ErrNoMoreRequests) {
+	if err := scanner.Err(); err != nil && !errors.Is(err, io.EOF) {
 		return lines, scanner.Err()
 	}
 	return lines, nil

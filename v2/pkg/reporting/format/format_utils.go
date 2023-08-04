@@ -113,7 +113,7 @@ func CreateReportDescription(event *output.ResultEvent, formatter ResultFormatte
 	}
 
 	reference := event.Info.Reference
-	if reference != nil && !reference.IsEmpty() {
+	if !reference.IsEmpty() {
 		builder.WriteString("\nReferences: \n")
 
 		referenceSlice := reference.ToSlice()

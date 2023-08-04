@@ -2,15 +2,14 @@ package fuzz
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"strings"
 
 	"github.com/corpix/uarand"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/expressions"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/generators"
-	"github.com/projectdiscovery/nuclei/v2/pkg/types"
 	"github.com/projectdiscovery/retryablehttp-go"
-	sliceutil "github.com/projectdiscovery/utils/slice"
 	urlutil "github.com/projectdiscovery/utils/url"
 )
 
@@ -30,32 +29,32 @@ func (rule *Rule) executeQueryPartRule(input *ExecuteRuleInput, payload string) 
 		return err
 	}
 	origRequestURL := requestURL.Clone()
-	// clone the params to avoid modifying the original
-	temp := origRequestURL.Params.Clone()
+	temp := urlutil.Params{}
+	for k, v := range origRequestURL.Query() {
+		// this has to be a deep copy
+		x := []string{}
+		x = append(x, v...)
+		temp[k] = x
+	}
 
-	origRequestURL.Query().Iterate(func(key string, values []string) bool {
-		cloned := sliceutil.Clone(values)
+	for key, values := range origRequestURL.Query() {
 		for i, value := range values {
 			if !rule.matchKeyOrValue(key, value) {
 				continue
 			}
 			var evaluated string
 			evaluated, input.InteractURLs = rule.executeEvaluate(input, key, value, payload, input.InteractURLs)
-			cloned[i] = evaluated
+			temp[key][i] = evaluated
 
 			if rule.modeType == singleModeType {
-				temp.Update(key, cloned)
 				requestURL.Params = temp
-				if qerr := rule.buildQueryInput(input, requestURL, input.InteractURLs); qerr != nil {
-					err = qerr
-					return false
+				if err := rule.buildQueryInput(input, requestURL, input.InteractURLs); err != nil {
+					return err
 				}
-				cloned[i] = value // change back to previous value for temp
+				temp[key][i] = value // change back to previous value for temp
 			}
 		}
-		temp.Update(key, cloned)
-		return true
-	})
+	}
 
 	if rule.modeType == multipleModeType {
 		requestURL.Params = temp
@@ -63,8 +62,7 @@ func (rule *Rule) executeQueryPartRule(input *ExecuteRuleInput, payload string) 
 			return err
 		}
 	}
-
-	return err
+	return nil
 }
 
 // buildQueryInput returns created request for a Query Input
@@ -87,7 +85,7 @@ func (rule *Rule) buildQueryInput(input *ExecuteRuleInput, parsed *urlutil.URL, 
 		DynamicValues: input.Values,
 	}
 	if !input.Callback(request) {
-		return types.ErrNoMoreRequests
+		return io.EOF
 	}
 	return nil
 }

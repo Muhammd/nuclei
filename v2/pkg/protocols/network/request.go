@@ -29,7 +29,6 @@ import (
 	protocolutils "github.com/projectdiscovery/nuclei/v2/pkg/protocols/utils"
 	templateTypes "github.com/projectdiscovery/nuclei/v2/pkg/templates/types"
 	errorutil "github.com/projectdiscovery/utils/errors"
-	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
 var _ protocols.Request = &Request{}
@@ -60,19 +59,10 @@ func (request *Request) ExecuteWithResults(input *contextargs.Context, metadata,
 	variablesMap := request.options.Variables.Evaluate(variables)
 	variables = generators.MergeMaps(variablesMap, variables, request.options.Constants)
 
-	visitedAddresses := make(mapsutil.Map[string, struct{}])
-
 	for _, kv := range request.addresses {
 		actualAddress := replacer.Replace(kv.address, variables)
 
-		if visitedAddresses.Has(actualAddress) && !request.options.Options.DisableClustering {
-			continue
-		}
-		visitedAddresses.Set(actualAddress, struct{}{})
-
 		if err := request.executeAddress(variables, actualAddress, address, input.MetaInput.Input, kv.tls, previous, callback); err != nil {
-			outputEvent := request.responseToDSLMap("", "", "", address, "")
-			callback(&output.InternalWrappedEvent{InternalEvent: outputEvent})
 			gologger.Warning().Msgf("[%v] Could not make network request for (%s) : %s\n", request.options.TemplateID, actualAddress, err)
 			continue
 		}
@@ -120,6 +110,7 @@ func (request *Request) executeRequestWithPayloads(variables map[string]interfac
 		conn     net.Conn
 		err      error
 	)
+
 	if host, _, err := net.SplitHostPort(actualAddress); err == nil {
 		hostname = host
 	}
@@ -135,7 +126,7 @@ func (request *Request) executeRequestWithPayloads(variables map[string]interfac
 		return errors.Wrap(err, "could not connect to server")
 	}
 	defer conn.Close()
-	_ = conn.SetDeadline(time.Now().Add(time.Duration(request.options.Options.Timeout) * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(time.Duration(request.options.Options.Timeout) * time.Second))
 
 	var interactshURLs []string
 

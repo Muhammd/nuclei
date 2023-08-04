@@ -14,7 +14,7 @@ import (
 	proxyutils "github.com/projectdiscovery/utils/proxy"
 )
 
-// loadProxyServers load list of proxy servers from file or comma separated
+// loadProxyServers load list of proxy servers from file or comma seperated
 func loadProxyServers(options *types.Options) error {
 	if len(options.Proxy) == 0 {
 		return nil

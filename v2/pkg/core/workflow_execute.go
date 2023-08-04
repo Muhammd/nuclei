@@ -25,23 +25,14 @@ func (e *Engine) executeWorkflow(input *contextargs.MetaInput, w *workflows.Work
 	ctxArgs.MetaInput = input
 	ctxArgs.CookieJar = workflowCookieJar
 
-	// we can know the nesting level only at runtime, so the best we can do here is increase template threads by one unit in case it's equal to 1 to allow
-	// at least one subtemplate to go through, which it's idempotent to one in-flight template as the parent one is in an idle state
-	templateThreads := w.Options.Options.TemplateThreads
-	if templateThreads == 1 {
-		templateThreads++
-	}
-	swg := sizedwaitgroup.New(templateThreads)
-
+	swg := sizedwaitgroup.New(w.Options.Options.TemplateThreads)
 	for _, template := range w.Workflows {
 		swg.Add()
-
 		func(template *workflows.WorkflowTemplate) {
-			defer swg.Done()
-
 			if err := e.runWorkflowStep(template, ctxArgs, results, &swg, w); err != nil {
 				gologger.Warning().Msgf(workflowStepExecutionError, template.Template, err)
 			}
+			swg.Done()
 		}(template)
 	}
 	swg.Wait()
@@ -135,11 +126,10 @@ func (e *Engine) runWorkflowStep(template *workflows.WorkflowTemplate, input *co
 						swg.Add()
 
 						go func(subtemplate *workflows.WorkflowTemplate) {
-							defer swg.Done()
-
 							if err := e.runWorkflowStep(subtemplate, input, results, swg, w); err != nil {
 								gologger.Warning().Msgf(workflowStepExecutionError, subtemplate.Template, err)
 							}
+							swg.Done()
 						}(subtemplate)
 					}
 				}

@@ -21,10 +21,10 @@ type customTemplateGitLabRepo struct {
 	projectIDs   []int
 }
 
-// NewGitLabProviders returns a new list of GitLab providers for downloading custom templates
-func NewGitLabProviders(options *types.Options) ([]*customTemplateGitLabRepo, error) {
+// NewGitlabProviders returns a new list of GitLab providers for downloading custom templates
+func NewGitlabProviders(options *types.Options) ([]*customTemplateGitLabRepo, error) {
 	providers := []*customTemplateGitLabRepo{}
-	if options.GitLabToken != "" && !options.GitLabTemplateDisableDownload {
+	if options.GitLabToken != "" {
 		// Establish a connection to GitLab and build a client object with which to download templates from GitLab
 		gitLabClient, err := getGitLabClient(options.GitLabServerURL, options.GitLabToken)
 		if err != nil {

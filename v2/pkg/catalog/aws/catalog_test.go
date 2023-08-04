@@ -141,7 +141,7 @@ func TestCatalog_OpenFile(t *testing.T) {
 			false,
 		},
 		{
-			"nonexistent key",
+			"non-existent key",
 			"something/that-doesnt-exist.yaml",
 			true,
 		},

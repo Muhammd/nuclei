@@ -144,7 +144,7 @@ type ResultEvent struct {
 	// MatcherStatus is the status of the match
 	MatcherStatus bool `json:"matcher-status"`
 	// Lines is the line count for the specified match
-	Lines []int `json:"matched-line,omitempty"`
+	Lines []int `json:"matched-line"`
 
 	FileToIndexPosition map[string]int `json:"-"`
 }
@@ -187,10 +187,9 @@ func NewStandardWriter(options *types.Options) (*StandardWriter, error) {
 			gologger.Fatal().Msgf("Could not create output directory '%s': %s\n", options.StoreResponseDir, err)
 		}
 	}
-
 	writer := &StandardWriter{
 		json:             options.JSONL,
-		jsonReqResp:      !options.OmitRawRequests,
+		jsonReqResp:      options.JSONRequests,
 		noMetadata:       options.NoMeta,
 		matcherStatus:    options.MatcherStatus,
 		timestamp:        options.Timestamp,

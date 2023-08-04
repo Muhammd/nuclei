@@ -65,22 +65,12 @@ func (e *Executer) Execute(input *contextargs.Context) (bool, error) {
 
 	dynamicValues := make(map[string]interface{})
 	if input.HasArgs() {
-		input.ForEach(func(key string, value interface{}) {
+		input.ForEach(func(key string, value interface{}) error {
 			dynamicValues[key] = value
+			return nil
 		})
 	}
 	previous := make(map[string]interface{})
-
-	var lastMatcherEvent *output.InternalWrappedEvent
-	writeFailureCallback := func(event *output.InternalWrappedEvent, matcherStatus bool) {
-		if !results.Load() && matcherStatus {
-			if err := e.options.Output.WriteFailure(event.InternalEvent); err != nil {
-				gologger.Warning().Msgf("Could not write failure event to output: %s\n", err)
-			}
-			results.CompareAndSwap(false, true)
-		}
-	}
-
 	for _, req := range e.requests {
 		inputItem := input.Clone()
 		if e.options.InputHelper != nil && input.MetaInput.Input != "" {
@@ -109,12 +99,16 @@ func (e *Executer) Execute(input *contextargs.Context) (bool, error) {
 			// in that case we can skip it, otherwise we've to show failure in
 			// case of matcher-status flag.
 			if !event.HasOperatorResult() && !event.UsesInteractsh {
-				lastMatcherEvent = event
+				if err := e.options.Output.WriteFailure(event.InternalEvent); err != nil {
+					gologger.Warning().Msgf("Could not write failure event to output: %s\n", err)
+				}
 			} else {
 				if writer.WriteResult(event, e.options.Output, e.options.Progress, e.options.IssuesClient) {
 					results.CompareAndSwap(false, true)
 				} else {
-					lastMatcherEvent = event
+					if err := e.options.Output.WriteFailure(event.InternalEvent); err != nil {
+						gologger.Warning().Msgf("Could not write failure event to output: %s\n", err)
+					}
 				}
 			}
 		})
@@ -129,9 +123,6 @@ func (e *Executer) Execute(input *contextargs.Context) (bool, error) {
 			break
 		}
 	}
-	if lastMatcherEvent != nil {
-		writeFailureCallback(lastMatcherEvent, e.options.Options.MatcherStatus)
-	}
 	return results.Load(), nil
 }
 
@@ -139,8 +130,9 @@ func (e *Executer) Execute(input *contextargs.Context) (bool, error) {
 func (e *Executer) ExecuteWithResults(input *contextargs.Context, callback protocols.OutputEventCallback) error {
 	dynamicValues := make(map[string]interface{})
 	if input.HasArgs() {
-		input.ForEach(func(key string, value interface{}) {
+		input.ForEach(func(key string, value interface{}) error {
 			dynamicValues[key] = value
+			return nil
 		})
 	}
 	previous := make(map[string]interface{})
