@@ -25,6 +25,9 @@ require (
 	github.com/projectdiscovery/hmap v0.0.16
 	github.com/projectdiscovery/interactsh v1.1.6
 	github.com/projectdiscovery/rawhttp v0.1.18
+	github.com/projectdiscovery/retryabledns v1.0.32
+	github.com/projectdiscovery/retryablehttp-go v1.0.21-0.20230801214243-88ac9a4aed92
+=======
 	github.com/projectdiscovery/retryabledns v1.0.35
 	github.com/projectdiscovery/retryablehttp-go v1.0.25
 	github.com/projectdiscovery/yamldoc-go v1.0.4
